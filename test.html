@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Frame-by-Frame Animation</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+        }
+        .animation-container {
+            text-align: center;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        img {
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body>
+
+<div class="animation-container">
+    <!-- 1. The HTML image placeholder where frames will switch -->
+    <img id="animation-frame" src="https://media.geeksforgeeks.org/wp-content/uploads/20210721215006/frame1.PNG" alt="Animation Frame">
+    <h2>Frame-by-Frame Animation</h2>
+</div>
+
+<script>
+    // 2. An array holding the URLs or file paths of your frames
+    const frames = [
+        "https://media.geeksforgeeks.org/wp-content/uploads/20210721215006/frame1.PNG",
+        "https://media.geeksforgeeks.org/wp-content/uploads/20210721215014/frame2-200x190.PNG",
+        "https://media.geeksforgeeks.org/wp-content/uploads/20210721215021/frame3-200x182.PNG"
+    ];
+
+    let currentFrameIndex = 0;
+    const imgElement = document.getElementById("animation-frame");
+
+    // 3. The function that switches the frame
+    function playAnimation() {
+        // Move to the next frame index
+        currentFrameIndex++;
+
+        // If we reach the end of the array, loop back to the first frame
+        if (currentFrameIndex >= frames.length) {
+            currentFrameIndex = 0;
+        }
+
+        // Update the image source to the new frame
+        imgElement.src = frames[currentFrameIndex];
+    }
+
+    // 4. Run the function every 300 milliseconds (adjust for speed)
+    setInterval(playAnimation, 300);
+</script>
+
+</body>
+</html>
