@@ -39,27 +39,64 @@
         const FPS = 30;
         const FRAME_TIME = 1000 / FPS;
         const JUMP_FRAMES = FPS * 10;
+        const MAX_CACHED_FRAMES = FPS * 3;
         const frames = Array.from({ length: FRAME_COUNT }, (_, index) => {
             const frameNumber = String(index + 1).padStart(6, "0");
             return `MD-EP1-CC_frames_low-qual-demo/frame_${frameNumber}.jpg`;
         });
         let index = 0;
         let playing = true;
-        let interval = null;
+        let playbackToken = 0;
+        const loadedFrames = new Map();
         const img = document.getElementById("frame");
         const frameNumber = document.getElementById("frameNumber");
         const playButton = document.getElementById("playButton");
 
-        function showFrame() {
-            img.src = frames[index];
+        function loadFrame(frameIndex) {
+            if (!loadedFrames.has(frameIndex)) {
+                const image = new Image();
+                const frame = new Promise((resolve, reject) => {
+                    image.onload = () => resolve(image);
+                    image.onerror = reject;
+                });
+                image.src = frames[frameIndex];
+                loadedFrames.set(frameIndex, frame);
+                while (loadedFrames.size > MAX_CACHED_FRAMES) {
+                    loadedFrames.delete(loadedFrames.keys().next().value);
+                }
+            }
+            return loadedFrames.get(frameIndex);
+        }
+
+        async function showFrame() {
+            const image = await loadFrame(index);
+            img.src = image.src;
             frameNumber.textContent = index + 1;
         }
-        function playFrame() {
-            index = (index + 1) % frames.length;
-            showFrame();
+
+        function wait(milliseconds) {
+            return new Promise((resolve) => setTimeout(resolve, milliseconds));
         }
-        function startPlayback() { interval = setInterval(playFrame, FRAME_TIME); }
-        function stopPlayback() { clearInterval(interval); interval = null; }
+
+        async function playbackLoop(token) {
+            while (playing && token === playbackToken) {
+                await showFrame();
+                await wait(FRAME_TIME);
+                if (playing && token === playbackToken) {
+                    index = (index + 1) % frames.length;
+                }
+            }
+        }
+
+        function startPlayback() {
+            playbackToken += 1;
+            playbackLoop(playbackToken);
+        }
+
+        function stopPlayback() {
+            playbackToken += 1;
+        }
+
         function togglePlay() {
             playing = !playing;
             if (playing) {
