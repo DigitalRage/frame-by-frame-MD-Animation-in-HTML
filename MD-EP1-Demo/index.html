@@ -36,10 +36,11 @@
     </main>
     <script>
         const FRAME_COUNT = 5000;
-        const FPS = 30;
+        const FPS = 24;
         const FRAME_TIME = 1000 / FPS;
         const JUMP_FRAMES = FPS * 10;
         const MAX_CACHED_FRAMES = FPS * 3;
+        const FRAME_LOAD_TIMEOUT = 5000;
         const frames = Array.from({ length: FRAME_COUNT }, (_, index) => {
             const frameNumber = String(index + 1).padStart(6, "0");
             return `MD-EP1-CC_frames_low-qual-demo/frame_${frameNumber}.jpg`;
@@ -56,8 +57,20 @@
             if (!loadedFrames.has(frameIndex)) {
                 const image = new Image();
                 const frame = new Promise((resolve, reject) => {
-                    image.onload = () => resolve(image);
-                    image.onerror = reject;
+                    let settled = false;
+                    const finish = (callback, value) => {
+                        if (!settled) {
+                            settled = true;
+                            clearTimeout(timeout);
+                            callback(value);
+                        }
+                    };
+                    const timeout = setTimeout(() => finish(reject, new Error("Frame load timed out")), FRAME_LOAD_TIMEOUT);
+                    image.onload = () => {
+                        const decoded = typeof image.decode === "function" ? image.decode() : Promise.resolve();
+                        decoded.then(() => finish(resolve, image)).catch((error) => finish(reject, error));
+                    };
+                    image.onerror = () => finish(reject, new Error("Frame failed to load"));
                 });
                 image.src = frames[frameIndex];
                 loadedFrames.set(frameIndex, frame);
@@ -69,9 +82,16 @@
         }
 
         async function showFrame() {
-            const image = await loadFrame(index);
+            let image;
+            try {
+                image = await loadFrame(index);
+            } catch (error) {
+                console.warn(`Skipping frame ${index + 1}:`, error.message);
+                return false;
+            }
             img.src = image.src;
             frameNumber.textContent = index + 1;
+            return true;
         }
 
         function wait(milliseconds) {
