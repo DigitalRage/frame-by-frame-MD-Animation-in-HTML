@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Frame-by-Frame Video Player Example</title>
+<style>
+    body { display: flex; justify-content: center; align-items: center; height: 100vh; background: #eee; font-family: sans-serif; }
+    .player { text-align: center; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+    img { width: 300px; height: 300px; object-fit: contain; }
+    button { margin: 10px; padding: 10px 20px; font-size: 18px; }
+</style>
+</head>
+<body>
+<div class="player">
+    <img id="frame" src="" alt="Frame">
+    <h2>Frame-by-Frame Video</h2>
+    <button onclick="rewind()">&#9194; -10s</button>
+    <button onclick="togglePlay()">&#9654; / &#9208;</button>
+    <button onclick="fastForward()">&#9193; +10s</button>
+</div>
+<script>
+    const frames = [
+        "https://media.geeksforgeeks.org/wp-content/uploads/20210721215006/frame1.PNG",
+        "https://media.geeksforgeeks.org/wp-content/uploads/20210721215014/frame2-200x190.PNG",
+        "https://media.geeksforgeeks.org/wp-content/uploads/20210721215021/frame3-200x182.PNG"
+    ];
+    const FPS = 30;
+    const FRAME_TIME = 1000 / FPS;
+    const JUMP_FRAMES = FPS * 10;
+    let index = 0;
+    let playing = true;
+    let interval = null;
+    const img = document.getElementById("frame");
+
+    function playFrame() {
+        index = (index + 1) % frames.length;
+        img.src = frames[index];
+    }
+    function startPlayback() { interval = setInterval(playFrame, FRAME_TIME); }
+    function stopPlayback() { clearInterval(interval); interval = null; }
+    function togglePlay() {
+        playing = !playing;
+        if (playing) startPlayback(); else stopPlayback();
+    }
+    function rewind() {
+        stopPlayback();
+        index = Math.max(index - JUMP_FRAMES, 0);
+        img.src = frames[index];
+        if (playing) startPlayback();
+    }
+    function fastForward() {
+        stopPlayback();
+        index = Math.min(index + JUMP_FRAMES, frames.length - 1);
+        img.src = frames[index];
+        if (playing) startPlayback();
+    }
+    img.src = frames[0];
+    startPlayback();
+</script>
+</body>
+</html>
