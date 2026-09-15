@@ -98,17 +98,28 @@
     /* ------------------------------
        4. Rewind / Fast-forward
        ------------------------------ */
-    function rewind() {
+   function rewind() {
+        stopPlayback(); // stop interval safely
+
         index -= JUMP_FRAMES;
         if (index < 0) index = 0;
+
         img.src = frames[index];
+
+        if (playing) startPlayback(); // resume if video was playing
     }
 
     function fastForward() {
+        stopPlayback(); // stop interval safely
+
         index += JUMP_FRAMES;
         if (index >= frames.length) index = frames.length - 1;
+
         img.src = frames[index];
+
+        if (playing) startPlayback(); // resume if video was playing
     }
+
 
     /* ------------------------------
        5. Start automatically
