@@ -73,10 +73,9 @@
         index++;
 
         if (index >= frames.length) {
-            index = frames.length - 1; // stop at end
-            playing = false;
-            clearInterval(interval);
-        }
+            index = 0; // loop instead of stopping
+    }
+
 
         img.src = frames[index];
     }
